@@ -59,7 +59,7 @@ func TestRead(t *testing.T) {
 		IP:   [4]byte{127, 0, 0, 1},
 		Port: 11111,
 	}
-	c := New()
+	c := NewTCPClient()
 	if err := c.Connect(addr); err != nil {
 		t.Fatal(err)
 	}

@@ -26,27 +26,27 @@ func (a *Addr) sockaddrInet4() syscall.SockaddrInet4 {
 	return sa
 }
 
-// Client is an interface for the TPC client
-type Client interface {
+// TCPClient is an interface for the TPC client
+type TCPClient interface {
 	Connect(addr *Addr) error
 	Read() (io.Reader, error)
 	Write(data []byte) (int, error)
 	Close() error
 }
 
-// New creates a client
-func New() Client {
-	return &client{}
+// NewTCPClient creates a client
+func NewTCPClient() TCPClient {
+	return &tcpclient{}
 }
 
-type client struct {
+type tcpclient struct {
 	addr   *Addr
 	socket int
 }
 
 // Connect creates a connection to the given IP address.
 // If the client already has a connection, it will be closed.
-func (c *client) Connect(addr *Addr) error {
+func (c *tcpclient) Connect(addr *Addr) error {
 	c.Close()
 
 	socket, err := syscall.Socket(syscall.AF_INET, syscall.SOCK_STREAM, 0)
@@ -63,7 +63,7 @@ func (c *client) Connect(addr *Addr) error {
 }
 
 // Read returns the data as `io.Reader`.
-func (c *client) Read() (io.Reader, error) {
+func (c *tcpclient) Read() (io.Reader, error) {
 	buf := make([]byte, 1024)
 	if _, err := syscall.Read(c.socket, buf); err != nil {
 		log.Fatal(err)
@@ -72,11 +72,11 @@ func (c *client) Read() (io.Reader, error) {
 }
 
 // Write writes data.
-func (c *client) Write(data []byte) (int, error) {
+func (c *tcpclient) Write(data []byte) (int, error) {
 	return syscall.Write(c.socket, data)
 }
 
 // Close closes the connection.
-func (c *client) Close() error {
+func (c *tcpclient) Close() error {
 	return syscall.Close(c.socket)
 }
