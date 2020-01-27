@@ -1,4 +1,4 @@
-package tcp
+package http
 
 import (
 	"bytes"
@@ -72,7 +72,7 @@ func TestRead(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	expected := []byte("helloa")
+	expected := []byte("hello")
 	if bytes.Compare(b, expected) == 0 {
 		t.Errorf("expected: '%v', actual: '%v'\n", expected, b)
 	}
