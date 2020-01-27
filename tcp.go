@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"fmt"
 	"io"
-	"log"
 	"syscall"
 )
 
@@ -28,9 +27,18 @@ func (a *Addr) sockaddrInet4() syscall.SockaddrInet4 {
 
 // TCPClient is an interface for the TPC client
 type TCPClient interface {
+	// Connect creates a TCP connection to the given IP address.
+	// If the client already has a connection, it will be closed.
+	// The tcp connection should be closed by `Close()`.
 	Connect(addr *Addr) error
-	Read() (io.Reader, error)
-	Write(data []byte) (int, error)
+
+	// GetReader returns a reader to read responses
+	GetReader() (io.Reader, error)
+
+	// Send writes data.
+	Send(data []byte) (int, error)
+
+	// Close closes the connection.
 	Close() error
 }
 
@@ -44,8 +52,6 @@ type tcpclient struct {
 	socket int
 }
 
-// Connect creates a connection to the given IP address.
-// If the client already has a connection, it will be closed.
 func (c *tcpclient) Connect(addr *Addr) error {
 	c.Close()
 
@@ -62,21 +68,30 @@ func (c *tcpclient) Connect(addr *Addr) error {
 	return nil
 }
 
-// Read returns the data as `io.Reader`.
-func (c *tcpclient) Read() (io.Reader, error) {
-	buf := make([]byte, 1024)
-	if _, err := syscall.Read(c.socket, buf); err != nil {
-		log.Fatal(err)
-	}
-	return bytes.NewReader(buf), nil
+func (c *tcpclient) GetReader() (io.Reader, error) {
+	return &reader{c.socket}, nil
 }
 
-// Write writes data.
-func (c *tcpclient) Write(data []byte) (int, error) {
+func (c *tcpclient) Send(data []byte) (int, error) {
 	return syscall.Write(c.socket, data)
 }
 
-// Close closes the connection.
 func (c *tcpclient) Close() error {
 	return syscall.Close(c.socket)
+}
+
+type reader struct {
+	socket int
+}
+
+func (r *reader) Read(buf []byte) (int, error) {
+	if _, err := syscall.Read(r.socket, buf); err != nil {
+		return 0, err
+	}
+
+	idx := bytes.IndexByte(buf, 0)
+	if idx == -1 {
+		return len(buf), nil
+	}
+	return idx + 1, io.EOF
 }

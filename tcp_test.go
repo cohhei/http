@@ -8,7 +8,7 @@ import (
 	"time"
 )
 
-func TestRead(t *testing.T) {
+func TestTCPClient(t *testing.T) {
 	ch := make(chan struct{})
 	go func() {
 		socket, err := syscall.Socket(syscall.AF_INET, syscall.SOCK_STREAM, 0)
@@ -63,11 +63,11 @@ func TestRead(t *testing.T) {
 	if err := c.Connect(addr); err != nil {
 		t.Fatal(err)
 	}
-	data, err := c.Read()
+	r, err := c.GetReader()
 	if err != nil {
 		t.Fatal(err)
 	}
-	b, err := ioutil.ReadAll(data)
+	b, err := ioutil.ReadAll(r)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -76,7 +76,7 @@ func TestRead(t *testing.T) {
 	if bytes.Compare(b, expected) == 0 {
 		t.Errorf("expected: '%v', actual: '%v'\n", expected, b)
 	}
-	n, err := c.Write([]byte("world"))
+	n, err := c.Send([]byte("world"))
 	if err != nil {
 		t.Fatal(err)
 	}
