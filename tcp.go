@@ -2,28 +2,9 @@ package http
 
 import (
 	"bytes"
-	"fmt"
 	"io"
 	"syscall"
 )
-
-// Addr contains an IP address and a port
-type Addr struct {
-	IP   [4]byte
-	Port int
-}
-
-func (a *Addr) String() string {
-	return fmt.Sprintf("%d.%d.%d.%d:%d", a.IP[0], a.IP[1], a.IP[2], a.IP[3], a.Port)
-}
-
-func (a *Addr) sockaddrInet4() syscall.SockaddrInet4 {
-	sa := syscall.SockaddrInet4{
-		Addr: a.IP,
-		Port: a.Port,
-	}
-	return sa
-}
 
 // TCPClient is an interface for the TPC client
 type TCPClient interface {
@@ -61,8 +42,7 @@ func (c *tcpclient) Connect(addr *Addr) error {
 	}
 	c.socket = socket
 
-	sa := addr.sockaddrInet4()
-	if err := syscall.Connect(socket, &sa); err != nil {
+	if err := syscall.Connect(socket, addr.sockaddr()); err != nil {
 		return err
 	}
 	return nil
