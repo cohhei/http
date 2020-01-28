@@ -63,6 +63,7 @@ func TestTCPClient(t *testing.T) {
 	if err := c.Connect(addr); err != nil {
 		t.Fatal(err)
 	}
+	defer c.Close()
 	r, err := c.GetReader()
 	if err != nil {
 		t.Fatal(err)
