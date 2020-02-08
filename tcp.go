@@ -46,6 +46,7 @@ func (c *tcpClient) Listen(ip [4]byte, port int) (io.ReadWriteCloser, error) {
 	if err != nil {
 		return nil, err
 	}
+	defer syscall.Close(socket)
 
 	if err := syscall.Bind(socket, sockaddr(ip, port)); err != nil {
 		return nil, err
