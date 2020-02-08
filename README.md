@@ -1,8 +1,10 @@
-# Too naive HTTP client
+# Too naive HTTP client and server
 
-`cohhei/http` is a too simple and naive HTTP client that doesn't depend on `net/http`. This client has only one method, `Do` which sends an HTTP request.
+`cohhei/http` is a too simple and naive HTTP client and server library that doesn't depend on `net/http`. This client has only one method, `Do` which sends an HTTP request.
 
 ## Usage
+
+### HTTP client
 
 ```go
 package main
@@ -41,6 +43,32 @@ func main() {
 
 ```
 
+### HTTP server
+
+```go
+package main
+
+import (
+	"io"
+	"log"
+	"os"
+
+	"github.com/cohhei/http"
+)
+
+func main() {
+	log.SetFlags(log.LstdFlags | log.Lshortfile)
+	http.HandleFunc("/", func(w io.Writer, r io.Reader) {
+		io.Copy(os.Stderr, r)
+		w.Write([]byte("HTTP/1.1 200 OK\naaaaa: bbbbbb\n\nHello World!"))
+	})
+	log.Print("http://127.0.0.1:8080/")
+	if err := http.ListenAndServe(8080); err != nil {
+		log.Fatal(err)
+	}
+}
+```
+
 ## Too naive TCP client
 
 This package has a TCP client that depends on only `syscall`.
@@ -49,14 +77,12 @@ This package has a TCP client that depends on only `syscall`.
 
 ```go
 // Create a client
-addr := &http.Addr{
-  IP:   [4]byte{127, 0, 0, 1},
-  Port: 11111,
-}
 c := http.NewTCPClient()
 
 // Connect to the address
-if err := c.Connect(addr); err != nil {
+ip := [4]byte{127, 0, 0, 1}
+port := 11111
+if err := c.Connect(ip, port); err != nil {
   	log.Fatal(err)
 }
 
@@ -82,13 +108,10 @@ This package has a UDP client that depends on only `syscall`.
 
 ```go
 c := http.NewUDPClient()
-addr := &Addr{
-	IP:   [4]byte{8, 8, 8, 8},
-	Port: 53,
-}
-
+ip := [4]byte{8, 8, 8, 8}
+port := 53
 b := []byte{0x01}
-if err := c.SendTo(b, addr); err != nil {
+if err := c.SendTo(b, ip, port); err != nil {
 	log.Fatal(err)
 }
 defer c.Close()
