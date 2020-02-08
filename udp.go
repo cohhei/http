@@ -8,7 +8,7 @@ import (
 // UDPClient is an interface for the UDP client
 type UDPClient interface {
 	// SendTo sends data.
-	SendTo(data []byte, addr *Addr) error
+	SendTo(data []byte, ip [4]byte, port int) error
 
 	// Recvfrom returns io.Reader
 	Recvfrom() (io.Reader, error)
@@ -26,14 +26,14 @@ type udpClient struct {
 	socket int
 }
 
-func (c *udpClient) SendTo(data []byte, addr *Addr) error {
+func (c *udpClient) SendTo(data []byte, ip [4]byte, port int) error {
 	socket, err := syscall.Socket(syscall.AF_INET, syscall.SOCK_DGRAM, 0)
 	if err != nil {
 		return err
 	}
 	c.socket = socket
 
-	return syscall.Sendto(socket, data, 0, addr.sockaddr())
+	return syscall.Sendto(socket, data, 0, sockaddr(ip, port))
 }
 
 func (c *udpClient) Recvfrom() (io.Reader, error) {

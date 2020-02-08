@@ -53,39 +53,27 @@ func (c *client) Do(req *Request) (io.ReadCloser, error) {
 		req.Port = 80
 	}
 
-	addr, err := getIP(req.Host, req.Port)
+	ip, port, err := getIP(req.Host, req.Port)
 	if err != nil {
 		return nil, err
 	}
-	if err := c.tcpClient.Connect(addr); err != nil {
+	conn, err := c.tcpClient.Connect(ip, port)
+	if err != nil {
 		return nil, err
 	}
 
 	data := rawRequest(req)
-	if _, err := c.tcpClient.Send(data); err != nil {
+	if _, err := conn.Write(data); err != nil {
 		return nil, err
 	}
 
-	resp, err := c.tcpClient.GetReader()
-	if err != nil {
-		return nil, err
-	}
-	return &readCloser{resp, c.tcpClient}, nil
+	return conn, nil
 }
 
-type readCloser struct {
-	io.Reader
-	TCPClient
-}
-
-func (r *readCloser) Close() error {
-	return r.TCPClient.Close()
-}
-
-func getIP(hostname string, port int) (*Addr, error) {
+func getIP(hostname string, port int) ([4]byte, int, error) {
 	ipAddr, err := net.ResolveIPAddr("ip", hostname)
 	if err != nil {
-		return nil, err
+		return [4]byte{}, 0, err
 	}
 
 	var ip [4]byte
@@ -93,12 +81,8 @@ func getIP(hostname string, port int) (*Addr, error) {
 	if port == 0 {
 		port = 80
 	}
-	addr := &Addr{
-		IP:   ip,
-		Port: port,
-	}
 
-	return addr, nil
+	return ip, port, nil
 }
 
 func rawRequest(req *Request) []byte {

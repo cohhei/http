@@ -55,20 +55,15 @@ func TestTCPClient(t *testing.T) {
 	}()
 
 	time.Sleep(10 * time.Millisecond)
-	addr := &Addr{
-		IP:   [4]byte{127, 0, 0, 1},
-		Port: 11111,
-	}
+	ip := [4]byte{127, 0, 0, 1}
+	port := 11111
 	c := NewTCPClient()
-	if err := c.Connect(addr); err != nil {
-		t.Fatal(err)
-	}
-	defer c.Close()
-	r, err := c.GetReader()
+	conn, err := c.Connect(ip, port)
 	if err != nil {
 		t.Fatal(err)
 	}
-	b, err := ioutil.ReadAll(r)
+	defer conn.Close()
+	b, err := ioutil.ReadAll(conn)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -77,7 +72,7 @@ func TestTCPClient(t *testing.T) {
 	if bytes.Compare(b, expected) == 0 {
 		t.Errorf("expected: '%v', actual: '%v'\n", expected, b)
 	}
-	n, err := c.Send([]byte("world"))
+	n, err := conn.Write([]byte("world"))
 	if err != nil {
 		t.Fatal(err)
 	}

@@ -9,63 +9,75 @@ import (
 // TCPClient is an interface for the TPC client
 type TCPClient interface {
 	// Connect creates a TCP connection to the given IP address.
-	// If the client already has a connection, it will be closed.
-	// The tcp connection should be closed by `Close()`.
-	Connect(addr *Addr) error
+	// The returned connection should be closed.
+	Connect(ip [4]byte, port int) (connection io.ReadWriteCloser, err error)
 
-	// GetReader returns a reader to read responses
-	GetReader() (io.Reader, error)
-
-	// Send writes data.
-	Send(data []byte) (int, error)
-
-	// Close closes the connection.
-	Close() error
+	// Listen listens for TCP connections.
+	// This method creates a new socket and binds it to the given address by using syscall.Bind().
+	// In addition, calls syscall.Listen() and syscall.Accept().
+	// The process will be blocked until a request comes.
+	// The returned connection should be closed.
+	Listen(ip [4]byte, port int) (connection io.ReadWriteCloser, err error)
 }
 
 // NewTCPClient creates a client
 func NewTCPClient() TCPClient {
-	return &tcpclient{}
+	return &tcpClient{}
 }
 
-type tcpclient struct {
-	addr   *Addr
-	socket int
-}
+type tcpClient struct{}
 
-func (c *tcpclient) Connect(addr *Addr) error {
-	c.Close()
-
+func (c *tcpClient) Connect(ip [4]byte, port int) (io.ReadWriteCloser, error) {
 	socket, err := syscall.Socket(syscall.AF_INET, syscall.SOCK_STREAM, 0)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	c.socket = socket
 
-	if err := syscall.Connect(socket, addr.sockaddr()); err != nil {
-		return err
+	sa := sockaddr(ip, port)
+	if err := syscall.Connect(socket, sa); err != nil {
+		return nil, err
 	}
-	return nil
+
+	return &tcpConnection{socket, sa}, nil
 }
 
-func (c *tcpclient) GetReader() (io.Reader, error) {
-	return &reader{c.socket}, nil
+func (c *tcpClient) Listen(ip [4]byte, port int) (io.ReadWriteCloser, error) {
+	socket, err := syscall.Socket(syscall.AF_INET, syscall.SOCK_STREAM, 0)
+	if err != nil {
+		return nil, err
+	}
+
+	if err := syscall.Bind(socket, sockaddr(ip, port)); err != nil {
+		return nil, err
+	}
+
+	if err := syscall.Listen(socket, 5); err != nil {
+		return nil, err
+	}
+
+	nfd, sa, err := syscall.Accept(socket)
+	if err != nil {
+		return nil, err
+	}
+
+	return &tcpConnection{nfd, sa}, nil
 }
 
-func (c *tcpclient) Send(data []byte) (int, error) {
-	return syscall.Write(c.socket, data)
+func sockaddr(ip [4]byte, port int) syscall.Sockaddr {
+	sa := &syscall.SockaddrInet4{
+		Addr: ip,
+		Port: port,
+	}
+	return sa
 }
 
-func (c *tcpclient) Close() error {
-	return syscall.Close(c.socket)
-}
-
-type reader struct {
+type tcpConnection struct {
 	socket int
+	sa     syscall.Sockaddr
 }
 
-func (r *reader) Read(buf []byte) (int, error) {
-	if _, err := syscall.Read(r.socket, buf); err != nil {
+func (c *tcpConnection) Read(buf []byte) (int, error) {
+	if _, err := syscall.Read(c.socket, buf); err != nil {
 		return 0, err
 	}
 
@@ -74,4 +86,12 @@ func (r *reader) Read(buf []byte) (int, error) {
 		return len(buf), nil
 	}
 	return idx + 1, io.EOF
+}
+
+func (c *tcpConnection) Write(p []byte) (int, error) {
+	return syscall.Write(c.socket, p)
+}
+
+func (c *tcpConnection) Close() error {
+	return syscall.Close(c.socket)
 }
