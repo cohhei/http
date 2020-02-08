@@ -63,14 +63,6 @@ func (c *tcpClient) Listen(ip [4]byte, port int) (io.ReadWriteCloser, error) {
 	return &tcpConnection{nfd, sa}, nil
 }
 
-func sockaddr(ip [4]byte, port int) syscall.Sockaddr {
-	sa := &syscall.SockaddrInet4{
-		Addr: ip,
-		Port: port,
-	}
-	return sa
-}
-
 type tcpConnection struct {
 	socket int
 	sa     syscall.Sockaddr

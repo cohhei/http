@@ -7,29 +7,6 @@ import (
 	"strings"
 )
 
-// Request is a struct for HTTP requests
-type Request struct {
-	// Method is a string for HTTP methods.
-	Method string
-
-	// Headers is a map for HTTP headers.
-	Headers map[string]string
-
-	// Host is a string for the hostname.
-	Host string
-
-	// Port is the port number.
-	// If it is omitted, it will be 80.
-	Port int
-
-	// Path is the URL path.
-	// If it is omitted, it will be '/'.
-	Path string
-
-	// Body is the HTTP request body.
-	Body string
-}
-
 // Client is an interface for the HTTP client.
 type Client interface {
 	Do(req *Request) (io.ReadCloser, error)
@@ -39,6 +16,7 @@ type client struct {
 	tcpClient TCPClient
 }
 
+// NewClient returns a new HTTP client.
 func NewClient() Client {
 	c := &client{
 		tcpClient: NewTCPClient(),
