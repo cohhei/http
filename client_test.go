@@ -1,6 +1,8 @@
 package http
 
 import (
+	"bytes"
+	"strings"
 	"testing"
 )
 
@@ -35,13 +37,16 @@ func TestRawRequest(t *testing.T) {
 	req := &Request{
 		Method: "GET",
 		Headers: map[string]string{
-			"Key":    "Value",
+			"Key": "Value",
 		},
 		Host: "example.com",
 		Port: 80,
-		Body: "_",
+		Body: strings.NewReader("_"),
 	}
-	got := string(rawRequest(req))
+
+	buf := bytes.NewBuffer(nil)
+	write(buf, req)
+	got := buf.String()
 	want := `GET / HTTP/1.1
 Host: example.com:80
 Key: Value

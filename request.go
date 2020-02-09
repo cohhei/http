@@ -1,5 +1,9 @@
 package http
 
+import (
+	"io"
+)
+
 // Request is a struct for HTTP requests
 type Request struct {
 	// Method is a string for HTTP methods.
@@ -20,5 +24,5 @@ type Request struct {
 	Path string
 
 	// Body is the HTTP request body.
-	Body string
+	Body io.Reader
 }

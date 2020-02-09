@@ -40,10 +40,7 @@ func (c *client) Do(req *Request) (io.ReadCloser, error) {
 		return nil, err
 	}
 
-	data := rawRequest(req)
-	if _, err := conn.Write(data); err != nil {
-		return nil, err
-	}
+	write(conn, req)
 
 	return conn, nil
 }
@@ -63,7 +60,7 @@ func getIP(hostname string, port int) ([4]byte, int, error) {
 	return ip, port, nil
 }
 
-func rawRequest(req *Request) []byte {
+func write(w io.Writer, req *Request) {
 	var headers []string
 	for k, v := range req.Headers {
 		headers = append(headers, fmt.Sprintf("%s: %s", k, v))
@@ -75,6 +72,9 @@ func rawRequest(req *Request) []byte {
 Host: %s:%d
 %s
 
-%s`
-	return []byte(fmt.Sprintf(format, req.Method, req.Path, req.Host, req.Port, strings.Join(headers, "\n"), req.Body))
+`
+	fmt.Fprintf(w, format, req.Method, req.Path, req.Host, req.Port, strings.Join(headers, "\n"))
+	if req.Body != nil {
+		io.Copy(w, req.Body)
+	}
 }

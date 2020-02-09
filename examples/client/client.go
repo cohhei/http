@@ -18,7 +18,6 @@ func main() {
 		Host:    "example.com",
 		Path:    "/index.html",
 		Headers: map[string]string{},
-		Body:    "",
 	}
 
 	// Send the request.
