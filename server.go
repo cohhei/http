@@ -27,25 +27,42 @@ func ListenAndServe(port int) error {
 
 func (s *Server) ListenAndServe(port int) error {
 	ip := [4]byte{127, 0, 0, 1}
-	conn, err := s.tcpClient.Listen(ip, port)
+	listener, err := s.tcpClient.Listen(ip, port)
 	if err != nil {
 		return err
 	}
-	defer conn.Close()
+	defer listener.Close()
 
-	req, err := parse(conn)
-	if err != nil {
-		return err
+	ch := make(chan io.ReadWriteCloser)
+
+	go func() {
+		for {
+			conn, err := listener.Accept()
+			if err != nil {
+				break
+			}
+			ch <- conn
+		}
+	}()
+
+	for {
+		conn := <-ch
+		go func() {
+			defer conn.Close()
+
+			req, err := parse(conn)
+			if err != nil {
+				io.Copy(conn, strings.NewReader("HTTP/1.1 404 Not Found\n\n404 Not Found"))
+			}
+
+			handler, exists := s.router[req.Path]
+			if exists {
+				handler(conn, req)
+			} else {
+				io.Copy(conn, strings.NewReader("HTTP/1.1 404 Not Found\n\n404 Not Found"))
+			}
+		}()
 	}
-
-	handler, exists := s.router[req.Path]
-	if exists {
-		handler(conn, req)
-	} else {
-		io.Copy(conn, strings.NewReader("HTTP/1.1 404 Not Found\n\n404 Not Found"))
-	}
-
-	return nil
 }
 
 func parse(r io.Reader) (*Request, error) {
