@@ -78,7 +78,7 @@ func (c *tcpConnection) Read(buf []byte) (int, error) {
 	if idx == -1 {
 		return len(buf), nil
 	}
-	return idx + 1, io.EOF
+	return idx, io.EOF
 }
 
 func (c *tcpConnection) Write(p []byte) (int, error) {

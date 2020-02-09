@@ -69,7 +69,7 @@ func TestTCPClient(t *testing.T) {
 	}
 
 	expected := []byte("hello")
-	if bytes.Compare(b, expected) == 0 {
+	if bytes.Compare(b, expected) != 0 {
 		t.Errorf("expected: '%v', actual: '%v'\n", expected, b)
 	}
 	n, err := conn.Write([]byte("world"))
