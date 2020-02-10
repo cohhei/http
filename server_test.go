@@ -3,52 +3,10 @@ package http
 import (
 	"io"
 	"io/ioutil"
-	"reflect"
 	"strings"
 	"testing"
 	"time"
 )
-
-func TestParse(t *testing.T) {
-	r := strings.NewReader(`GET /index.html HTTP/1.1
-Host: localhost:8080
-User-Agent: curl/7.64.1
-Accept: */*
-
-__`)
-
-	got, err := parse(r)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	want := &Request{
-		Method: "GET",
-		Headers: map[string]string{
-			"Host":       "localhost:8080",
-			"User-Agent": "curl/7.64.1",
-			"Accept":     "*/*",
-		},
-		Host: "localhost",
-		Port: 8080,
-		Path: "/index.html",
-		Body: strings.NewReader("__"),
-	}
-
-	if got.Method != want.Method || got.Host != want.Host || got.Path != want.Path || got.Port != want.Port {
-		t.Fatalf("\nwant:\t%+v\ngot:\t%+v\n", want, got)
-	}
-
-	if !reflect.DeepEqual(got.Headers, want.Headers) {
-		t.Fatalf("\nwant:\t%+v\ngot:\t%+v\n", want.Headers, got.Headers)
-	}
-
-	gb, _ := ioutil.ReadAll(got.Body)
-	wb, _ := ioutil.ReadAll(want.Body)
-	if string(gb) != string(wb) {
-		t.Fatalf("\nwant:\t%s\ngot:\t%s\n", wb, gb)
-	}
-}
 
 func TestListenAndServe(t *testing.T) {
 	path := "/path/to/content"
