@@ -40,6 +40,31 @@ var requests = []struct {
 	},
 }
 
+var responses = []struct {
+	name string
+	raw  string
+	want *Response
+}{
+	{
+		name: "Status OK",
+		raw:  fmt.Sprintf("HTTP/1.1 200 OK\n%s", headers[2].raw),
+		want: &Response{
+			Status:  200,
+			Headers: headers[2].want,
+			Body:    strings.NewReader(""),
+		},
+	},
+	{
+		name: "Not Found",
+		raw:  fmt.Sprintf("HTTP/1.1 404 Not Found\n%s404 Not Found", headers[3].raw),
+		want: &Response{
+			Status:  404,
+			Headers: headers[3].want,
+			Body:    strings.NewReader("404 Not Found"),
+		},
+	},
+}
+
 var headers = []struct {
 	name string
 	raw  string
@@ -62,6 +87,22 @@ var headers = []struct {
 			"Content-Type":   "application/x-www-form-urlencoded",
 			"Content-Length": "27",
 			"User-Agent":     "cohhei/http",
+		},
+	},
+	{
+		"JSON",
+		"Content-Type: application/json\nContent-Length: 2\n\n",
+		map[string]string{
+			"Content-Type":   "application/json",
+			"Content-Length": "2",
+		},
+	},
+	{
+		"404",
+		"Content-Type: text/plain\nContent-Length: 13\n\n",
+		map[string]string{
+			"Content-Type":   "text/plain",
+			"Content-Length": "13",
 		},
 	},
 }
@@ -98,6 +139,31 @@ func TestParseRequest(t *testing.T) {
 
 			gb, _ := ioutil.ReadAll(got.Body)
 			wb, _ := ioutil.ReadAll(req.want.Body)
+			if string(gb) != string(wb) {
+				t.Fatalf("\nwant:\t%s\ngot:\t%s\n", wb, gb)
+			}
+		})
+	}
+}
+
+func TestParseResponse(t *testing.T) {
+	for _, resp := range responses {
+		t.Run(resp.name, func(t *testing.T) {
+			got, err := parseResponse(strings.NewReader(resp.raw))
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			if got.Status != resp.want.Status {
+				t.Fatalf("\nwant:\t%+v\ngot:\t%+v\n", resp.want.Status, got.Status)
+			}
+
+			if !reflect.DeepEqual(got.Headers, resp.want.Headers) {
+				t.Fatalf("\nwant:\t%+v\ngot:\t%+v\n", resp.want.Headers, got.Headers)
+			}
+
+			gb, _ := ioutil.ReadAll(got.Body)
+			wb, _ := ioutil.ReadAll(resp.want.Body)
 			if string(gb) != string(wb) {
 				t.Fatalf("\nwant:\t%s\ngot:\t%s\n", wb, gb)
 			}

@@ -16,9 +16,8 @@ func parseRequest(r io.Reader) (*Request, error) {
 	}
 	s := strings.Split(string(line), " ")
 	req := &Request{
-		Method:  s[0],
-		Path:    s[1],
-		Headers: make(map[string]string),
+		Method: s[0],
+		Path:   s[1],
 	}
 
 	headers, err := parseHeaders(buf)
@@ -44,6 +43,33 @@ func parseRequest(r io.Reader) (*Request, error) {
 	req.Body = buf
 
 	return req, nil
+}
+
+func parseResponse(r io.Reader) (*Response, error) {
+	// Read HTTP status code
+	buf := bufio.NewReader(r)
+	line, _, err := buf.ReadLine()
+	if err != nil {
+		return nil, err
+	}
+	s := strings.Split(string(line), " ")
+	code, err := strconv.Atoi(s[1])
+	if err != nil {
+		return nil, err
+	}
+	resp := &Response{
+		Status: code,
+	}
+
+	header, err := parseHeaders(buf)
+	if err != nil {
+		return nil, err
+	}
+	resp.Headers = header
+
+	resp.Body = buf
+
+	return resp, nil
 }
 
 func parseHeaders(buf *bufio.Reader) (map[string]string, error) {

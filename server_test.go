@@ -24,7 +24,6 @@ func TestListenAndServe(t *testing.T) {
 				t.Fatalf("\nwant:\t%+v\ngot:\t%+v\n", req, r)
 			}
 			io.Copy(w, strings.NewReader(data))
-			// w.Write([]byte(data))
 		})
 		if err := ListenAndServe(8888); err != nil {
 			t.Fatal(err)
@@ -34,19 +33,22 @@ func TestListenAndServe(t *testing.T) {
 	time.Sleep(10 * time.Millisecond)
 
 	c := NewClient()
-	resp, err := c.Do(req)
+	got, err := c.Do(req)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	b, err := ioutil.ReadAll(resp)
-	if err != nil {
-		t.Fatal(err)
+	want := &Response{
+		Status: 200,
+		Body: strings.NewReader("Hello World!"),
+	}
+	if got.Status != want.Status {
+		t.Fatalf("\nwant:\t%+v\ngot:\t%+v\n", want.Status, got.Status)
 	}
 
-	got := strings.TrimSpace(string(b))
-	want := data
-	if got != want {
-		t.Fatalf("\nwant:\t%+v\ngot:\t%+v\n", []byte(want), []byte(got))
+	gb, _ := ioutil.ReadAll(got.Body)
+	wb, _ := ioutil.ReadAll(want.Body)
+	if string(gb) != string(wb) {
+		t.Fatalf("\nwant:\t%s\ngot:\t%s\n", wb, gb)
 	}
 }

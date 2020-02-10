@@ -18,18 +18,14 @@ func TestDo(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer resp.Close()
 
-	buf := make([]byte, 15)
-	if _, err := resp.Read(buf); err != nil {
-		t.Fatal(err)
+	if resp.Status != 200 {
+		t.Fatalf("\nwant:\t%d\ngot:\t%d\n", 200, resp.Status)
 	}
 
-	got := string(buf)
-	want := "HTTP/1.1 200 OK"
-
-	if got != want {
-		t.Fatalf("expected:\t%s\nactual:\t%s\n", want, got)
+	contentType := "text/html; charset=UTF-8"
+	if resp.Headers["Content-Type"] != contentType {
+		t.Fatalf("\nwant:\t%s\ngot:\t%s\n", contentType, resp.Headers["Content-Type"])
 	}
 }
 

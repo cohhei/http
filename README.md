@@ -10,6 +10,7 @@
 package main
 
 import (
+	"fmt"
 	"io"
 	"log"
 	"os"
@@ -27,20 +28,17 @@ func main() {
 		Host:    "example.com",
 		Path:    "/index.html",
 		Headers: map[string]string{},
-		Body:    "",
 	}
 
 	// Send the request.
-	// This method returns the response as io.ReadCloser
 	resp, err := c.Do(req)
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer resp.Close() // The response should be closed.
 
-	io.Copy(os.Stdout, resp)
+	fmt.Println(resp)
+	io.Copy(os.Stdout, resp.Body)
 }
-
 ```
 
 ### HTTP server

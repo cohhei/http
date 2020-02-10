@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"io"
 	"log"
 	"os"
@@ -21,12 +22,11 @@ func main() {
 	}
 
 	// Send the request.
-	// This method returns the response as io.Reader
 	resp, err := c.Do(req)
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer resp.Close() // The response should be closed.
 
-	io.Copy(os.Stdout, resp)
+	fmt.Println(resp)
+	io.Copy(os.Stdout, resp.Body)
 }

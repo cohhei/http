@@ -9,7 +9,7 @@ import (
 
 // Client is an interface for the HTTP client.
 type Client interface {
-	Do(req *Request) (io.ReadCloser, error)
+	Do(req *Request) (*Response, error)
 }
 
 type client struct {
@@ -26,7 +26,7 @@ func NewClient() Client {
 
 // Do sends an HTTP request and returns an HTTP response as `io.ReadCloser`.
 // The response should be closed.
-func (c *client) Do(req *Request) (io.ReadCloser, error) {
+func (c *client) Do(req *Request) (*Response, error) {
 	if req.Port == 0 {
 		req.Port = 80
 	}
@@ -39,10 +39,11 @@ func (c *client) Do(req *Request) (io.ReadCloser, error) {
 	if err != nil {
 		return nil, err
 	}
+	defer conn.Close()
 
 	write(conn, req)
 
-	return conn, nil
+	return parseResponse(conn)
 }
 
 func getIP(hostname string, port int) ([4]byte, int, error) {
