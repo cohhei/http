@@ -15,10 +15,10 @@ func main() {
 
 	// Create a request.
 	req := &http.Request{
-		Method:  "GET",
-		Host:    "example.com",
-		Path:    "/index.html",
-		Headers: map[string]string{},
+		Method: "GET",
+		Host:   "example.com",
+		Path:   "/index.html",
+		Header: map[string]string{},
 	}
 
 	// Send the request.

@@ -24,15 +24,15 @@ func TestDo(t *testing.T) {
 	}
 
 	contentType := "text/html; charset=UTF-8"
-	if resp.Headers["Content-Type"] != contentType {
-		t.Fatalf("\nwant:\t%s\ngot:\t%s\n", contentType, resp.Headers["Content-Type"])
+	if resp.Header["Content-Type"] != contentType {
+		t.Fatalf("\nwant:\t%s\ngot:\t%s\n", contentType, resp.Header["Content-Type"])
 	}
 }
 
 func TestRawRequest(t *testing.T) {
 	req := &Request{
 		Method: "GET",
-		Headers: map[string]string{
+		Header: map[string]string{
 			"Key": "Value",
 		},
 		Host: "example.com",

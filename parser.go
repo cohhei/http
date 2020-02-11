@@ -20,14 +20,14 @@ func parseRequest(r io.Reader) (*Request, error) {
 		Path:   s[1],
 	}
 
-	headers, err := parseHeaders(buf)
+	header, err := parseHeader(buf)
 	if err != nil {
 		return nil, err
 	}
-	req.Headers = headers
+	req.Header = header
 
 	// Read host and port
-	if host, exists := headers["Host"]; exists {
+	if host, exists := header["Host"]; exists {
 		uri := strings.Split(string(host), ":")
 		req.Host = uri[0]
 		req.Port = 80
@@ -61,19 +61,19 @@ func parseResponse(r io.Reader) (*Response, error) {
 		Status: code,
 	}
 
-	header, err := parseHeaders(buf)
+	header, err := parseHeader(buf)
 	if err != nil {
 		return nil, err
 	}
-	resp.Headers = header
+	resp.Header = header
 
 	resp.Body = buf
 
 	return resp, nil
 }
 
-func parseHeaders(buf *bufio.Reader) (map[string]string, error) {
-	headers := make(map[string]string)
+func parseHeader(buf *bufio.Reader) (map[string]string, error) {
+	header := make(map[string]string)
 	for {
 		line, _, err := buf.ReadLine()
 		if err != nil {
@@ -83,7 +83,7 @@ func parseHeaders(buf *bufio.Reader) (map[string]string, error) {
 			break
 		}
 		h := strings.Split(string(line), ": ")
-		headers[h[0]] = h[1]
+		header[h[0]] = h[1]
 	}
-	return headers, nil
+	return header, nil
 }

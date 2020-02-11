@@ -18,24 +18,24 @@ var requests = []struct {
 		name: "GET",
 		raw:  fmt.Sprintf("GET / HTTP/1.1\n%s", headers[0].raw),
 		want: &Request{
-			Method:  "GET",
-			Headers: headers[0].want,
-			Host:    "example.com",
-			Port:    8080,
-			Path:    "/",
-			Body:    strings.NewReader(""),
+			Method: "GET",
+			Header: headers[0].want,
+			Host:   "example.com",
+			Port:   8080,
+			Path:   "/",
+			Body:   strings.NewReader(""),
 		},
 	},
 	{
 		name: "POST",
 		raw:  fmt.Sprintf("POST /new HTTP/1.1\n%sfield1=value1&field2=value2", headers[1].raw),
 		want: &Request{
-			Method:  "POST",
-			Headers: headers[1].want,
-			Host:    "example.com",
-			Port:    80,
-			Path:    "/new",
-			Body:    strings.NewReader("field1=value1&field2=value2"),
+			Method: "POST",
+			Header: headers[1].want,
+			Host:   "example.com",
+			Port:   80,
+			Path:   "/new",
+			Body:   strings.NewReader("field1=value1&field2=value2"),
 		},
 	},
 }
@@ -49,18 +49,18 @@ var responses = []struct {
 		name: "Status OK",
 		raw:  fmt.Sprintf("HTTP/1.1 200 OK\n%s", headers[2].raw),
 		want: &Response{
-			Status:  200,
-			Headers: headers[2].want,
-			Body:    strings.NewReader(""),
+			Status: 200,
+			Header: headers[2].want,
+			Body:   strings.NewReader(""),
 		},
 	},
 	{
 		name: "Not Found",
 		raw:  fmt.Sprintf("HTTP/1.1 404 Not Found\n%s404 Not Found", headers[3].raw),
 		want: &Response{
-			Status:  404,
-			Headers: headers[3].want,
-			Body:    strings.NewReader("404 Not Found"),
+			Status: 404,
+			Header: headers[3].want,
+			Body:   strings.NewReader("404 Not Found"),
 		},
 	},
 }
@@ -110,7 +110,7 @@ var headers = []struct {
 func TestParseHeader(t *testing.T) {
 	for _, header := range headers {
 		t.Run(header.name, func(t *testing.T) {
-			got, err := parseHeaders(bufio.NewReader(strings.NewReader(header.raw)))
+			got, err := parseHeader(bufio.NewReader(strings.NewReader(header.raw)))
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -133,8 +133,8 @@ func TestParseRequest(t *testing.T) {
 				t.Fatalf("\nwant:\t%+v\ngot:\t%+v\n", req.want, got)
 			}
 
-			if !reflect.DeepEqual(got.Headers, req.want.Headers) {
-				t.Fatalf("\nwant:\t%+v\ngot:\t%+v\n", req.want.Headers, got.Headers)
+			if !reflect.DeepEqual(got.Header, req.want.Header) {
+				t.Fatalf("\nwant:\t%+v\ngot:\t%+v\n", req.want.Header, got.Header)
 			}
 
 			gb, _ := ioutil.ReadAll(got.Body)
@@ -158,8 +158,8 @@ func TestParseResponse(t *testing.T) {
 				t.Fatalf("\nwant:\t%+v\ngot:\t%+v\n", resp.want.Status, got.Status)
 			}
 
-			if !reflect.DeepEqual(got.Headers, resp.want.Headers) {
-				t.Fatalf("\nwant:\t%+v\ngot:\t%+v\n", resp.want.Headers, got.Headers)
+			if !reflect.DeepEqual(got.Header, resp.want.Header) {
+				t.Fatalf("\nwant:\t%+v\ngot:\t%+v\n", resp.want.Header, got.Header)
 			}
 
 			gb, _ := ioutil.ReadAll(got.Body)

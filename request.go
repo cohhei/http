@@ -9,8 +9,8 @@ type Request struct {
 	// Method is a string for HTTP methods.
 	Method string
 
-	// Headers is a map for HTTP headers.
-	Headers map[string]string
+	// Header is a map for HTTP header.
+	Header map[string]string
 
 	// Host is a string for the hostname.
 	Host string

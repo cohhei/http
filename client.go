@@ -62,9 +62,9 @@ func getIP(hostname string, port int) ([4]byte, int, error) {
 }
 
 func write(w io.Writer, req *Request) {
-	var headers []string
-	for k, v := range req.Headers {
-		headers = append(headers, fmt.Sprintf("%s: %s", k, v))
+	var header []string
+	for k, v := range req.Header {
+		header = append(header, fmt.Sprintf("%s: %s", k, v))
 	}
 	if req.Path == "" {
 		req.Path = "/"
@@ -74,7 +74,7 @@ Host: %s:%d
 %s
 
 `
-	fmt.Fprintf(w, format, req.Method, req.Path, req.Host, req.Port, strings.Join(headers, "\n"))
+	fmt.Fprintf(w, format, req.Method, req.Path, req.Host, req.Port, strings.Join(header, "\n"))
 	if req.Body != nil {
 		io.Copy(w, req.Body)
 	}

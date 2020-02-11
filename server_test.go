@@ -40,7 +40,7 @@ func TestListenAndServe(t *testing.T) {
 
 	want := &Response{
 		Status: 200,
-		Body: strings.NewReader("Hello World!"),
+		Body:   strings.NewReader("Hello World!"),
 	}
 	if got.Status != want.Status {
 		t.Fatalf("\nwant:\t%+v\ngot:\t%+v\n", want.Status, got.Status)

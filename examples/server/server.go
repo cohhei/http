@@ -17,7 +17,7 @@ func main() {
 		w.Write([]byte("HTTP/1.1 200 OK\n\nindex.html"))
 	})
 	http.HandleFunc("/ua", func(w io.Writer, r *http.Request) {
-		w.Write([]byte(fmt.Sprintf("HTTP/1.1 200 OK\n\n%s", r.Headers["User-Agent"])))
+		w.Write([]byte(fmt.Sprintf("HTTP/1.1 200 OK\n\n%s", r.Header["User-Agent"])))
 	})
 	log.Print("http://127.0.0.1:8080/")
 	log.Print("http://127.0.0.1:8080/index.html")
