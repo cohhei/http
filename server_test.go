@@ -16,16 +16,18 @@ func TestListenAndServe(t *testing.T) {
 		Port:   8888,
 		Path:   path,
 	}
-	data := "HTTP/1.1 200 OK\n\nHello World!"
+	data := "Hello World!"
 
 	go func() {
-		HandleFunc(path, func(w io.Writer, r *Request) {
+		HandleFunc(path, func(w ResponseWriter, r *Request) {
 			if r.Method != req.Method || r.Host != req.Host || r.Path != req.Path || r.Port != req.Port {
 				t.Fatalf("\nwant:\t%+v\ngot:\t%+v\n", req, r)
 			}
+			w.Header()["Content-Type"] = "text/plain"
+			w.WriteHeader(200)
 			io.Copy(w, strings.NewReader(data))
 		})
-		if err := ListenAndServe(8888); err != nil {
+		if err := ListenAndServe(8881); err != nil {
 			t.Fatal(err)
 		}
 	}()
@@ -40,7 +42,7 @@ func TestListenAndServe(t *testing.T) {
 
 	want := &Response{
 		Status: 200,
-		Body:   strings.NewReader("Hello World!"),
+		Body:   strings.NewReader(data),
 	}
 	if got.Status != want.Status {
 		t.Fatalf("\nwant:\t%+v\ngot:\t%+v\n", want.Status, got.Status)
