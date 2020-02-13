@@ -68,12 +68,12 @@ var responses = []struct {
 var headers = []struct {
 	name string
 	raw  string
-	want map[string]string
+	want Header
 }{
 	{
 		"GET",
 		"Host: example.com:8080\nUser-Agent: cohhei/http\nAccept: */*\n\n",
-		map[string]string{
+		Header{
 			"Host":       "example.com:8080",
 			"User-Agent": "cohhei/http",
 			"Accept":     "*/*",
@@ -82,7 +82,7 @@ var headers = []struct {
 	{
 		"POST",
 		"Host: example.com\nContent-Type: application/x-www-form-urlencoded\nContent-Length: 27\nUser-Agent: cohhei/http\n\n",
-		map[string]string{
+		Header{
 			"Host":           "example.com",
 			"Content-Type":   "application/x-www-form-urlencoded",
 			"Content-Length": "27",
@@ -92,7 +92,7 @@ var headers = []struct {
 	{
 		"JSON",
 		"Content-Type: application/json\nContent-Length: 2\n\n",
-		map[string]string{
+		Header{
 			"Content-Type":   "application/json",
 			"Content-Length": "2",
 		},
@@ -100,7 +100,7 @@ var headers = []struct {
 	{
 		"404",
 		"Content-Type: text/plain\nContent-Length: 13\n\n",
-		map[string]string{
+		Header{
 			"Content-Type":   "text/plain",
 			"Content-Length": "13",
 		},

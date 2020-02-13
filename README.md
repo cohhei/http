@@ -27,7 +27,7 @@ func main() {
 		Method: "GET",
 		Host:   "example.com",
 		Path:   "/index.html",
-		Header: map[string]string{},
+		Header: Header{},
 	}
 
 	// Send the request.

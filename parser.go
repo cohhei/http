@@ -72,8 +72,9 @@ func parseResponse(r io.Reader) (*Response, error) {
 	return resp, nil
 }
 
-func parseHeader(buf *bufio.Reader) (map[string]string, error) {
-	header := make(map[string]string)
+func parseHeader(buf *bufio.Reader) (Header, error) {
+	header := make(Header)
+	
 	for {
 		line, _, err := buf.ReadLine()
 		if err != nil {

@@ -32,7 +32,7 @@ func TestDo(t *testing.T) {
 func TestRawRequest(t *testing.T) {
 	req := &Request{
 		Method: "GET",
-		Header: map[string]string{
+		Header: Header{
 			"Key": "Value",
 		},
 		Host: "example.com",
