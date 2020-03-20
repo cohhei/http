@@ -3,7 +3,6 @@ package http
 import (
 	"fmt"
 	"io"
-	"net"
 	"strings"
 )
 
@@ -14,12 +13,14 @@ type Client interface {
 
 type client struct {
 	tcpClient TCPClient
+	dnsClient DNSClient
 }
 
 // NewClient returns a new HTTP client.
 func NewClient() Client {
 	c := &client{
 		tcpClient: NewTCPClient(),
+		dnsClient: NewDNSClient(),
 	}
 	return c
 }
@@ -31,11 +32,12 @@ func (c *client) Do(req *Request) (*Response, error) {
 		req.Port = 80
 	}
 
-	ip, port, err := getIP(req.Host, req.Port)
+	ip, err := c.dnsClient.Resolve(req.Host)
 	if err != nil {
 		return nil, err
 	}
-	conn, err := c.tcpClient.Connect(ip, port)
+
+	conn, err := c.tcpClient.Connect(ip, req.Port)
 	if err != nil {
 		return nil, err
 	}
@@ -44,21 +46,6 @@ func (c *client) Do(req *Request) (*Response, error) {
 	write(conn, req)
 
 	return parseResponse(conn)
-}
-
-func getIP(hostname string, port int) ([4]byte, int, error) {
-	ipAddr, err := net.ResolveIPAddr("ip", hostname)
-	if err != nil {
-		return [4]byte{}, 0, err
-	}
-
-	var ip [4]byte
-	copy(ip[:], ipAddr.IP.To4())
-	if port == 0 {
-		port = 80
-	}
-
-	return ip, port, nil
 }
 
 func write(w io.Writer, req *Request) {
