@@ -27,7 +27,7 @@ func TestListenAndServe(t *testing.T) {
 			w.WriteHeader(200)
 			io.Copy(w, strings.NewReader(data))
 		})
-		if err := ListenAndServe(8881); err != nil {
+		if err := ListenAndServe(8888); err != nil {
 			t.Fatal(err)
 		}
 	}()
